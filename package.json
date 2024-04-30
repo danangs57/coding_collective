@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "autoprefixer": "^10.4.19",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "postcss": "^8.4.38",
+    "postcss-cli": "^11.0.0",
+    "sqlite3": "^5.1.7",
+    "tailwindcss": "^3.4.3"
+  },
+  "scripts": {
+    "build": "npm run tailwind:css && npm run dev",
+    "dev": "nodemon --ext js,ejs,css main.js ",
+    "tailwind:css": "npx tailwindcss build public/tailwind.css -o public/styles.css"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

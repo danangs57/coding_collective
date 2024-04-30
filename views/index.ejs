@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Wallet</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container mx-auto max-w-md p-6 bg-gray-100 rounded-lg shadow-md mt-16">
+        <h1 class="text-2xl font-bold text-center mb-8">Welcome to your E-wallet!</h1>
+        <h1 id="balance" class="text-2xl font-bold text-center mb-8">Your Balance : </h1>
+        <div class="mb-4">
+            <input type="text" id="nameInput" placeholder="Secret Authorization Code" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+        </div>
+        <div class="mb-4">
+            <input type="number" id="amountInput" placeholder="Enter Deposit Amount" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+        </div>
+        <div class="text-center">
+            <button id="deposit" class="px-6 py-3 bg-green-500 text-white font-bold rounded-full hover:bg-green-600 shadow-lg">Deposit</button>
+        </div>
+    </div>
+    
+            <div class="mt-4 p-4 bg-gray-100 rounded-lg">
+                <h2 class="text-lg font-bold mb-2 text-center">Transaction History</h2>
+                <ul id="history-list"></ul>
+            </div>
+</body>
+
+<script>
+     const getTransactionHistory = async () => {
+        const encodedNameToB64 = btoa('danang satriani');
+        const response = await fetch('/history', {
+                method: 'get',
+                headers: {
+                    'Authorization': `Bearer ${encodedNameToB64}`,
+                    'Content-Type': 'application/json'
+                },
+            });
+            const {data} = await response.json();
+            const historyList = document.getElementById('history-list');
+            historyList.classList.add('list-disc', 'pl-6','text-center');
+            historyList.innerHTML = '';
+            data.forEach(transaction => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `Amount: ${transaction.amount}, Date: ${transaction.timestamp}`;
+                historyList.appendChild(listItem);
+            });
+            
+    }
+    const getMyAccountDetail = async () => {
+
+        const encodedNameToB64 = btoa('danang satriani');
+        const response = await fetch('/me', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${encodedNameToB64}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: 'danang satriani',
+                })
+            });
+            const {data} = await response.json();
+            document.getElementById('balance').innerText = 'Your Balance : '+ data.balance;
+        }
+    const deposit = async () => {
+        try {
+            const nameInput = document.getElementById('nameInput');
+            const name = nameInput.value;
+            const amountInput = document.getElementById('amountInput');
+            const amount = amountInput.value;
+            if (name === '' || amount === '') {
+                alert('Name and amount cannot be empty');
+                return; 
+            }
+
+            // Generating a random order_id
+            const orderId = Math.floor(Math.random() * 100) + 1;
+
+            const encodedNameToB64 = btoa(name);
+            const response = await fetch('/deposit', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${encodedNameToB64}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    order_id: orderId,
+                    amount: amount,
+                    timestamp: new Date().toISOString()
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+            const data = await response.json();
+            if (!data) {
+                throw new Error('Invalid JSON data received');
+            }
+            if (data.status !== 200) {
+                throw new Error(data.message);
+            }
+            nameInput.value= ''
+            amountInput.value= 0
+            getMyAccountDetail()
+            getTransactionHistory()
+            alert('success!');
+        } catch (error) {
+            alert(error);
+        }
+    };
+    document.addEventListener('DOMContentLoaded', function() {
+    getMyAccountDetail();
+});
+    document.getElementById('deposit').addEventListener('click', deposit);
+</script>
+</html>
